@@ -1,0 +1,87 @@
+---
+title: "R Notebook"
+output: Rmd
+---
+
+```{r}
+install.packages("tidyverse")
+```
+
+
+```{r}
+install.packages("tidymodels")
+```
+
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+```
+
+```{r}
+train <- read_csv("train.csv") %>% 
+  mutate_if(is.character, as.factor)
+
+test <- read_csv("test.csv") %>% 
+  mutate_if(is.character, as.factor)
+```
+
+
+
+```{r}
+train
+```
+
+
+
+```{r}
+credit_impute_rec <- recipe(credit ~., data = train) %>%
+  step_impute_bag(occyp_type, impute_with = imp_vars(income_type, edu_type, family_type, house_type)) %>% 
+  prep()
+```
+
+
+```{r}
+credit_impute_rec <- recipe(credit ~., data = train) %>%
+    step_mutate(gender = factor(gender),
+              car = factor(car),
+              reality = factor(reality),
+              income_type = factor(income_type),
+              edu_type = factor(edu_type),
+              family_type = factor(family_type),
+              house_type = factor(house_type),
+              work_phone = factor(work_phone),
+              phone = factor(phone),
+              email = factor(email),
+              FLAG_MOBIL = factor(FLAG_MOBIL)) %>% 
+  step_mutate(DAYS_EMPLOYED = ifelse(DAYS_EMPLOYED > 0, 0, DAYS_EMPLOYED)) %>% 
+  step_impute_bag(occyp_type, impute_with = imp_vars(income_type, edu_type, family_type, house_type)) %>% 
+  prep()
+```
+
+
+
+```{r}
+baked_train2 = bake(credit_impute_rec, new_data = NULL)
+baked_test2 = bake(credit_impute_rec, new_data = test)
+```
+
+
+```{r}
+baked_train2
+```
+
+```{r}
+write_csv(baked_train2, "0810baked_train3.csv")
+```
+
+```{r}
+write_csv(baked_test2, "0810baked_test3.csv")
+```
+
+
+
+
+
+
+
